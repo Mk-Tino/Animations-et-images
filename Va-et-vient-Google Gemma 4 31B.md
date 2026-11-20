@@ -1,0 +1,237 @@
+Voici une solution complète regroupant HTML, CSS et JavaScript. J'ai utilisé l'API **SVG** pour les schémas et le rendu graphique, car elle permet une précision parfaite pour les circuits et les logigrammes.
+
+Vous pouvez copier ce code dans un fichier unique nommé `index.html` et l'ouvrir avec n'importe quel navigateur.
+
+```html
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulation Circuit Va-et-Vient (XOR)</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        h1 { color: #333; }
+        .container { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; max-width: 1000px; }
+        .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: center; }
+        .full-width { grid-column: span 2; }
+        
+        /* Styles SVG */
+        .wire { stroke: #555; stroke-width: 3; fill: none; transition: stroke 0.3s; }
+        .wire-on { stroke: #ffcc00; stroke-width: 4; }
+        .bulb-off { fill: #ddd; stroke: #999; }
+        .bulb-on { fill: #ffeb3b; stroke: #fbc02d; filter: drop-shadow(0 0 10px yellow); }
+        .switch-lever { transition: transform 0.2s; cursor: pointer; stroke: #333; stroke-width: 4; }
+        
+        /* Table de vérité */
+        table { border-collapse: collapse; margin: 20px auto; width: 200px; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+        .highlight { background-color: #ffe082; font-weight: bold; }
+
+        /* Chronogramme */
+        #chronogram { background: #fff; border: 1px solid #ccc; }
+        .chrono-line { stroke: #333; stroke-width: 2; fill: none; }
+        .chrono-label { font-size: 12px; font-weight: bold; }
+
+        .controls { margin-bottom: 20px; }
+        button { padding: 10px 20px; font-size: 16px; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 5px; }
+    </style>
+</head>
+<body>
+
+    <h1>Simulation Logique : Circuit Va-et-Vient</h1>
+
+    <div class="container">
+        <!-- 1. Animation Interactive -->
+        <div class="card">
+            <h3>Circuit Interactif</h3>
+            <svg width="300" height="200" viewBox="0 0 300 200">
+                <!-- Fils -->
+                <path id="wire1" class="wire" d="M 50 100 L 80 100" />
+                <path id="wire2" class="wire" d="M 120 100 L 150 100" />
+                <path id="wire3" class="wire" d="M 200 100 L 230 100" />
+                <path id="wire4" class="wire" d="M 250 100 L 250 60 L 150 60 L 150 100" /> <!-- Retour haut -->
+                <path id="wire5" class="wire" d="M 250 100 L 250 140 L 150 140 L 150 100" /> <!-- Retour bas -->
+                
+                <!-- Interrupteur A -->
+                <g id="switchA" onclick="toggle('A')" style="cursor:pointer">
+                    <circle cx="80" cy="100" r="4" fill="#333"/>
+                    <circle cx="120" cy="100" r="4" fill="#333"/>
+                    <line id="leverA" x1="80" y1="100" x2="120" y2="80" class="switch-lever" />
+                </g>
+
+                <!-- Interrupteur B -->
+                <g id="switchB" onclick="toggle('B')" style="cursor:pointer">
+                    <circle cx="150" cy="100" r="4" fill="#333"/>
+                    <circle cx="200" cy="100" r="4" fill="#333"/>
+                    <line id="leverB" x1="150" y1="100" x2="200" y2="80" class="switch-lever" />
+                </g>
+
+                <!-- Lampe -->
+                <circle id="bulb" cx="250" cy="100" r="15" class="bulb-off" />
+                <text x="242" y="125" font-size="12">Lampe L</text>
+                <text x="60" y="130" font-size="12">Inter A</text>
+                <text x="160" y="130" font-size="12">Inter B</text>
+            </svg>
+            <p>Cliquez sur les interrupteurs pour changer leur position.</p>
+        </div>
+
+        <!-- 2. Table de Vérité -->
+        <div class="card">
+            <h3>Table de Vérité (XOR)</h3>
+            <table>
+                <thead>
+                    <tr><th>A</th><th>B</th><th>L</th></tr>
+                </thead>
+                <tbody id="truth-table">
+                    <tr id="row0"><td>0</td><td>0</td><td>0</td></tr>
+                    <tr id="row1"><td>0</td><td>1</td><td>1</td></tr>
+                    <tr id="row2"><td>1</td><td>0</td><td>1</td></tr>
+                    <tr id="row3"><td>1</td><td>1</td><td>0</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 3. Logigramme -->
+        <div class="card">
+            <h3>Logigramme (Porte XOR)</h3>
+            <svg width="200" height="120" viewBox="0 0 200 120">
+                <!-- Porte XOR -->
+                <path d="M 60 40 Q 80 40 80 60 Q 80 80 60 80" fill="none" stroke="black" stroke-width="2"/>
+                <path d="M 50 40 Q 70 40 70 60 Q 70 80 50 80" fill="none" stroke="black" stroke-width="2"/>
+                <path d="M 80 40 L 100 60 L 80 80" fill="none" stroke="black" stroke-width="2"/>
+                
+                <text x="30" y="50" font-size="12">A</text>
+                <line x1="40" y1="50" x2="50" y2="50" stroke="black" />
+                <text x="30" y="70" font-size="12">B</text>
+                <line x1="40" y1="70" x2="50" y2="70" stroke="black" />
+                
+                <line x1="100" y1="60" x2="120" y2="60" stroke="black" />
+                <text x="125" y="65" font-size="12">L (Sortie)</text>
+            </svg>
+        </div>
+
+        <!-- 4. Chronogramme -->
+        <div class="card full-width">
+            <h3>Chronogramme (Évolution temporelle)</h3>
+            <svg id="chronogram" width="800" height="150" viewBox="0 0 800 150">
+                <!-- Axes -->
+                <text x="10" y="30" class="chrono-label">A</text>
+                <line x1="40" y1="20" x2="40" y2="40" stroke="black" />
+                <path id="pathA" class="chrono-line" d="M 40 30 L 100 30" />
+
+                <text x="10" y="70" class="chrono-label">B</text>
+                <line x1="40" y1="60" x2="40" y2="80" stroke="black" />
+                <path id="pathB" class="chrono-line" d="M 40 70 L 100 70" />
+
+                <text x="10" y="110" class="chrono-label">L</text>
+                <line x1="40" y1="100" x2="40" y2="120" stroke="black" />
+                <path id="pathL" class="chrono-line" d="M 40 110 L 100 110" />
+            </svg>
+            <div style="margin-top:10px">
+                <button onclick="resetChronogram()">Réinitialiser Chronogramme</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let stateA = 0;
+        let stateB = 0;
+        let timeX = 100;
+
+        function toggle(switchId) {
+            if(switchId === 'A') stateA = stateA === 0 ? 1 : 0;
+            if(switchId === 'B') stateB = stateB === 0 ? 1 : 0;
+            updateUI();
+        }
+
+        function updateUI() {
+            // 1. Mise à jour visuelle des interrupteurs
+            document.getElementById('leverA').setAttribute('x2', stateA === 0 ? '120' : '120');
+            document.getElementById('leverA').setAttribute('y2', stateA === 0 ? '80' : '120');
+            
+            document.getElementById('leverB').setAttribute('x2', stateB === 0 ? '200' : '200');
+            document.getElementById('leverB').setAttribute('y2', stateB === 0 ? '80' : '120');
+
+            // 2. Calcul de l'état de la lampe (XOR)
+            const lampOn = stateA !== stateB;
+            const bulb = document.getElementById('bulb');
+            bulb.setAttribute('class', lampOn ? 'bulb-on' : 'bulb-off');
+
+            // 3. Couleurs des fils (simplification : on allume le chemin actif)
+            const wire1 = document.getElementById('wire1');
+            const wire2 = document.getElementById('wire2');
+            const wire3 = document.getElementById('wire3');
+            
+            // Le fil est "sous tension" si le courant peut passer
+            if (lampOn) {
+                document.querySelectorAll('.wire').forEach(w => w.classList.add('wire-on'));
+            } else {
+                document.querySelectorAll('.wire').forEach(w => w.classList.remove('wire-on'));
+            }
+
+            // 4. Table de vérité
+            document.querySelectorAll('tr').forEach(r => r.classList.remove('highlight'));
+            const rowIdx = (stateA * 2) + stateB;
+            document.getElementById('row' + rowIdx).classList.add('highlight');
+
+            updateChronogram();
+        }
+
+        function updateChronogram() {
+            const step = 40;
+            const oldX = timeX;
+            timeX += step;
+
+            const yA = stateA === 0 ? 30 : 20;
+            const yB = stateB === 0 ? 70 : 60;
+            const yL = (stateA !== stateB) ? 100 : 110;
+
+            const pathA = document.getElementById('pathA');
+            const pathB = document.getElementById('pathB');
+            const pathL = document.getElementById('pathL');
+
+            pathA.setAttribute('d', pathA.getAttribute('d') + ` L ${oldX} 30 L ${oldX} ${yA} L ${timeX} ${yA}`);
+            pathB.setAttribute('d', pathB.getAttribute('d') + ` L ${oldX} 70 L ${oldX} ${yB} L ${timeX} ${yB}`);
+            pathL.setAttribute('d', pathL.getAttribute('d') + ` L ${oldX} 110 L ${oldX} ${yL} L ${timeX} ${yL}`);
+            
+            // Scroll automatique si on dépasse la largeur
+            if(timeX > 760) {
+                // On ne peut pas scroller le SVG facilement, on peut soit reset soit décaler
+            }
+        }
+
+        function resetChronogram() {
+            timeX = 100;
+            document.getElementById('pathA').setAttribute('d', 'M 40 30 L 100 30');
+            document.getElementById('pathB').setAttribute('d', 'M 40 70 L 100 70');
+            document.getElementById('pathL').setAttribute('d', 'M 40 110 L 100 110');
+        }
+
+        // Initialisation
+        updateUI();
+    </script>
+</body>
+</html>
+```
+
+### Explications techniques :
+
+1.  **L'Animation Interactive (SVG)** : 
+    *   J'ai modélisé le circuit avec des lignes (`path`). 
+    *   Les interrupteurs sont des groupes SVG. En cliquant dessus, on change la coordonnée `y2` de la barre (le levier), simulant le basculement entre le fil du haut et celui du bas.
+    *   La lampe change de couleur et ajoute un effet de "glow" (ombre portée jaune) lorsqu'elle est allumée.
+
+2.  **La Logique (XOR)** : 
+    *   Le va-et-vient est l'application physique parfaite de la porte logique **XOR** (OU exclusif). 
+    *   La condition `stateA !== stateB` détermine si la lampe est allumée.
+
+3.  **La Table de Vérité** : 
+    *   Elle est mise à jour dynamiquement. La ligne correspondant à l'état actuel des interrupteurs se colore en jaune.
+
+4.  **Le Chronogramme** :
+    *   C'est un graphique temporel. À chaque clic sur un interrupteur, le code ajoute un segment de ligne au chemin (`path`) du SVG.
+    *   S'il y a un changement d'état, on trace une ligne verticale puis horizontale pour représenter le signal numérique (0 ou 1).
+
+5.  **Le Logigramme** :
+    *   Représentation schématique d'une porte XOR standard avec les entrées A, B et la sortie L.
